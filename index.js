@@ -387,12 +387,12 @@ function write_message_to_user(container)
 			email: "david@0x4447.com",
 			subject: container.templates.atendee.subject,
 			body: message,
-			attachments: [
-				{
-					name: 'calenadar_event.ics',
-					data: container.ics
-				}
-			]
+			icalEvent: {
+				filename: 'calenadar_event.ics',
+				method: 'request',
+				content: container.ics,
+				encoding: 'base64'
+			}
 		}
 
 		//
