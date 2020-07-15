@@ -28,10 +28,10 @@ exports.handler = (event) => {
 		let container = {
 			req: {
 				bucket_name: event.Records[0].s3.bucket.name,
-				object_key: event.Records[0].s3.object.key
+				escaped_key: event.Records[0].s3.object.key
 			},
 			templates: templates,
-
+			unescaped_key: null,
 			//
 			//	Storing here the S3 object.
 			//
@@ -50,8 +50,12 @@ exports.handler = (event) => {
 		//
 		//	->	Start the chain.
 		//
-		load_object(container)
+		unescape_key(container)
 			.then(function(container) {
+
+				return load_object(container);
+
+			}).then(function(container) {
 
 				return write_message_to_self(container);
 
@@ -102,6 +106,41 @@ exports.handler = (event) => {
 //
 
 //
+//	We need to process the path received by S3 since AWS dose escape
+//	the string in a special way. They escape the string in a HTML style
+//	but for whatever reason they convert spaces in to +ses.
+//
+function unescape_key(container)
+{
+	return new Promise(function(resolve, reject) {
+
+		console.info("unescape_key");
+
+		//
+		//	1.	First we convert the + in to spaces.
+		//
+		let plus_to_space = container.req.escaped_key.replace(/\+/g, ' ');
+
+		//
+		//	2.	And then we unescape the string, other wise we lose
+		//		real + characters.
+		//
+		let unescaped_key = decodeURIComponent(plus_to_space);
+
+		//
+		//	3.	Save the result for the next promise.
+		//
+		container.unescaped_key = unescaped_key;
+
+		//
+		//	->	Move to the next chain.
+		//
+		return resolve(container);
+
+	});
+}
+
+//
 //	In this step we are going to load the object which trigerd this lamda,
 //	so we can see what type of misteries are hiddin in it.
 //
@@ -116,7 +155,7 @@ function load_object(container)
 		//
 		let params = {
 			Bucket: container.req.bucket_name,
-			Key: container.req.object_key
+			Key: container.unescaped_key
 		};
 
 		//
