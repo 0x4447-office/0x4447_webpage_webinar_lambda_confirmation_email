@@ -251,7 +251,7 @@ function get_webinar_date(container)
 		//
 		let params = {
 			Bucket: 'webinars.0x4447.com.db.events',
-			Key: 'latest_time.json'
+			Key: 'event.json'
 		};
 
 		//
@@ -271,7 +271,7 @@ function get_webinar_date(container)
 			//
 			//	2.	Save the object for the next promise.
 			//
-			container.date = JSON.parse(data.Body.toString());
+			container.event = JSON.parse(data.Body.toString());
 			
 			//
 			//	->	Move to the next promise.
@@ -298,8 +298,8 @@ function make_ical(container)
 		let cal = ical({
 			domain: '0x4447.com',
 			prodId: {
-				company: 'superman-industries.com', 
-				product: 'ical-generator'
+				company: '0x4447.com', 
+				product: 'webinars'
 			},
 			name: '0x4447 Webinar',
 			timezone: 'Europe/Berlin',
@@ -316,34 +316,53 @@ function make_ical(container)
 		});
 
 		//
-		//	3.	Set the bulk of the event with all the data.
+		//
+		//
+		container.event.first_name = container.user_details.full_name;
+
+		//
+		//	3.	Create the description of the iCal file.
+		//
+		let description = mustache.render(container.templates.calendar.text, container.event);
+
+		//
+		//	4.	Set the bulk of the event with all the data.
 		//
 		let event = cal.createEvent({
-			start: container.date.time,
-			end: container.date.time,
-			summary: 'Learning about stuff',
-			description: 'Epic place to learn',
-			organizer: 'David Gatti <david@0x4447.com>',
-			url: 'https://webinars.0x4447.com/'
+			start: container.event.time.start,
+			end: container.event.time.end,
+			summary: container.event.summary,
+			description: description,
+			organizer: 'David Gatti <david@0x4447.com>'
 		});
 
 		//
-		//	4.	Add all the atendees of the meeting.
+		//	5.	Create the Chime attendee with the meeting ID to help different
+		//		tools and devices to auto connect.
 		//
-		event.createAttendee({email: 'aws@chime.aws', name: 'AWS'});
-		event.createAttendee({email: 'david@0x4447.com', name: 'David Gatti'});
-		event.createAttendee({ email: 'bob@0x4447.com', name: 'Bob Jhon', rsvp: true });
+		let pin_email = 'pin+' + container.event.meeting_id + '@chime.aws'
+
+		//
+		//	6.	Add all the atendees of the meeting.
+		//
+		event.createAttendee({ email: 'meet@chime.aws', name: 'Chime' });
+		event.createAttendee({ email: pin_email, name: 'PIN' });
+		event.createAttendee({
+			email: container.user_details.email, 
+			name: container.user_details.full_name, 
+			rsvp: true 
+		});
 		
 		//
-		//	5.	Set when the callendar app should notificy about the event.
+		//	7.	Set when the callendar app should notificy about the event.
 		//
 		event.createAlarm({
 			type: 'audio',
-			trigger: 300 * 6, // 5min before event
+			trigger: 300 * 6, // 30min before event
 		});
 
 		//
-		//	6.	Convert the file in to a Base64 so we can attach it to the 
+		//	8.	Convert the file in to a Base64 so we can attach it to the 
 		//		email message payload.
 		//
 		container.ics = Buffer.from(cal.toString()).toString('base64');
@@ -368,31 +387,31 @@ function write_message_to_user(container)
 		console.info("write_message_to_user");
 
 		//
-		//	2.	Prepare the data to be replaced.
 		//
-		let data = {
-			first_name: container.user_details.full_name
-		}
+		//
+		container.event.first_name = container.user_details.full_name;
+		
 
 		//
 		//	3.	Render the message.
 		//
-		let message = mustache.render(container.templates.atendee.text, data);
+		let message = mustache.render(container.templates.atendee.text, container.event);
 
 		//
 		//	2.	Save it for the next promise.
 		//
 		container.message_user = {
-			name: "David Gatti",
-			email: "david@0x4447.com",
+			name: container.user_details.full_name,
+			email: container.user_details.email,
 			subject: container.templates.atendee.subject,
 			body: message,
-			icalEvent: {
-				filename: 'calenadar_event.ics',
-				method: 'request',
-				content: container.ics,
-				encoding: 'base64'
-			}
+			attachments: [
+				{
+					filename: 'event.ics',
+					content: container.ics,
+					encoding: 'base64'
+				}
+			]
 		}
 
 		//

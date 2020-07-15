@@ -1,0 +1,14 @@
+{{first_name}},
+
+Here are the details how to connect to the webinar:
+
+Connect with the browser
+
+  https://chime.aws/{{meeting_id}}
+
+Connect from an in-room video system, using one of the two provided systems:
+  
+  - SIP video system: {{meeting_id}}@meet.chime.in
+  - H.323 system: 13.248.147.139 or 76.223.18.152
+
+If prompted enter the Meeting PIN: {{meeting_id}}#
