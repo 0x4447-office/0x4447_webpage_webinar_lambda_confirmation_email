@@ -219,10 +219,14 @@ function write_message_to_self(container)
 		//	4.	Save it for the next promise.
 		//
 		container.message.organizer = {
-			name: "David Gatti",
-			email: "david@0x4447.com",
 			subject: container.templates.organizer.subject,
-			body: message
+			body: message,
+			emails: {
+				to: {
+					name: "David Gatti",
+					email: "david@0x4447.com"
+				}
+			}
 		}
 
 		//
@@ -440,10 +444,14 @@ function write_message_to_user(container)
 		//	2.	Save it for the next promise.
 		//
 		container.message_user = {
-			name: container.user_details.full_name,
-			email: container.user_details.email,
 			subject: container.templates.atendee.subject,
 			body: message,
+			emails: {
+				to: {
+					name: container.user_details.full_name,
+					email: container.user_details.email
+				}
+			},
 			attachments: [
 				{
 					filename: 'event.ics',
