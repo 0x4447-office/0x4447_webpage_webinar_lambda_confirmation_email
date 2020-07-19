@@ -30,6 +30,9 @@ exports.handler = (event) => {
 				bucket_name: event.Records[0].s3.bucket.name,
 				escaped_key: event.Records[0].s3.object.key
 			},
+			emails:{
+				we: process.env.EMAIL_WE
+			},
 			templates: templates,
 			unescaped_key: null,
 			//
@@ -224,7 +227,7 @@ function write_message_to_self(container)
 			emails: {
 				to: {
 					name: "David Gatti",
-					email: "david@0x4447.com"
+					email: container.emails.we
 				}
 			}
 		}
@@ -251,7 +254,7 @@ function save_object_to_self(container)
 		//
 		let params = {
 			Bucket: '0x4447-web-us-east-1-smtp',
-			Key: Math.floor(Date.now() / 1000) + '.json',
+			Key: Date.now() + '.json',
 			Body: JSON.stringify(container.message.organizer)
 		};
 
@@ -483,7 +486,7 @@ function save_object_to_user(container)
 		//
 		let params = {
 			Bucket: '0x4447-web-us-east-1-smtp',
-			Key: Math.floor(Date.now() / 1000) + '.json',
+			Key: Date.now() + '.json',
 			Body: JSON.stringify(container.message_user)
 		};
 
