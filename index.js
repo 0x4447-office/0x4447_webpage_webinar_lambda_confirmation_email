@@ -364,7 +364,7 @@ function make_ical(container)
 		//
 		//
 		//
-		container.event.first_name = container.reseller_details.first_name;
+		container.event.first_name = container.user_details.first_name;
 
 		//
 		//	3.	Create the description of the iCal file.
