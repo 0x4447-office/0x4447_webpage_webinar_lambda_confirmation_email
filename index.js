@@ -364,7 +364,7 @@ function make_ical(container)
 		//
 		//
 		//
-		container.event.first_name = container.user_details.full_name;
+		container.event.first_name = container.reseller_details.first_name;
 
 		//
 		//	3.	Create the description of the iCal file.
@@ -433,25 +433,27 @@ function write_message_to_user(container)
 		console.info("write_message_to_user");
 
 		//
+		//	1.	Create the full name of the reseller.
 		//
-		//
-		container.event.first_name = container.user_details.full_name;
+		let full_name = container.user_details.first_name 
+					  + " " 
+					  + container.user_details.last_name;
 		
 
 		//
-		//	3.	Render the message.
+		//	2.	Render the message.
 		//
 		let message = mustache.render(container.templates.atendee.text, container.event);
 
 		//
-		//	2.	Save it for the next promise.
+		//	3.	Save it for the next promise.
 		//
 		container.message_user = {
 			subject: container.templates.atendee.subject,
 			body: message,
 			emails: {
 				to: {
-					name: container.user_details.full_name,
+					name: full_name,
 					email: container.user_details.email
 				}
 			},
