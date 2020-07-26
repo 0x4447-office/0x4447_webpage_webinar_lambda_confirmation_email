@@ -395,7 +395,7 @@ function make_ical(container)
 		event.createAttendee({ email: pin_email, name: 'PIN' });
 		event.createAttendee({
 			email: container.user_details.email, 
-			name: container.user_details.full_name, 
+			name: container.user_details.first_name, 
 			rsvp: true 
 		});
 		
